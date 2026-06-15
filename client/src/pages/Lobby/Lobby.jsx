@@ -16,9 +16,9 @@ function Lobby() {
     SocketContext
   );
 
-  const [roomCode,
-    setRoomCode] =
-    useState("");
+  const [room,
+    setRoom] =
+    useState(null);
 
   const [joinCode,
     setJoinCode] =
@@ -50,9 +50,7 @@ function Lobby() {
           room
         );
 
-        setRoomCode(
-          room.roomCode
-        );
+        setRoom(room);
       };
 
     const handleRoomUpdated =
@@ -62,9 +60,7 @@ function Lobby() {
           room
         );
 
-        setRoomCode(
-          room.roomCode
-        );
+        setRoom(room);
       };
 
     const handleRoomError =
@@ -177,15 +173,66 @@ function Lobby() {
         Join Room
       </button>
 
-      {roomCode && (
+      {room && (
         <div
           className="
-          text-lg
-          font-semibold
+          mt-6
+          border
+          rounded
+          p-4
+          w-96
           "
         >
-          Room:{" "}
-          {roomCode}
+          <h2
+            className="
+            text-xl
+            font-bold
+            mb-2
+            "
+          >
+            Room Code:{" "}
+            {room.roomCode}
+          </h2>
+
+          <h3
+            className="
+            mb-4
+            "
+          >
+            Players:{" "}
+            {room.players.length}
+            /12
+          </h3>
+
+          <div
+            className="
+            flex
+            flex-col
+            gap-2
+            "
+          >
+            {room.players.map(
+              (player) => (
+                <div
+                  key={
+                    player.socketId
+                  }
+                  className="
+                  border
+                  p-2
+                  rounded
+                  "
+                >
+                  {
+                    player.socketId
+                  }
+
+                  {player.isHost &&
+                    " 👑 Host"}
+                </div>
+              )
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -25,6 +25,7 @@ const createRoom = (
       {
         socketId: hostSocketId,
         isHost: true,
+        isReady: false,
       },
     ],
 
@@ -87,6 +88,7 @@ const joinRoom = (
   room.players.push({
     socketId,
     isHost: false,
+    isReady: false,
   });
 
   return room;
