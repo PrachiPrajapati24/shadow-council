@@ -1,16 +1,53 @@
-# React + Vite
+# Shadow Council
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Shadow Council is a real-time multiplayer social deduction game where players join private rooms and compete using strategy, deception, and teamwork.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* User Authentication
+* Real-time Multiplayer Gameplay
+* Room Creation & Joining System
+* Live Player Synchronization using Socket.IO
+* Responsive React Frontend
+* Node.js & Express Backend
+* MongoDB Database Integration
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the ESLint configuration
+* React
+* Vite
+* React Router
+* Socket.IO Client
+* Tailwind CSS
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend
+
+* Node.js
+* Express.js
+* Socket.IO
+* MongoDB
+* JWT Authentication
+
+## Current Progress
+
+* Authentication System
+* Online Player Tracking
+* Room Creation
+* Room Joining
+* Real-time Room Synchronization
+
+## Upcoming Features
+
+* Waiting Room Screen
+* Player Ready System
+* Role Assignment
+* Chat System
+* Voting Mechanism
+* Game Phases
+* Leaderboards
+
+## Author
+
+Prachi Prajapati
