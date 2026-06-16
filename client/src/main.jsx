@@ -7,6 +7,7 @@ import "./index.css";
 
 import AuthProvider from "./context/AuthContext";
 import SocketProvider from "./context/SocketProvider";
+import GameProvider from "./context/GameContext";
 
 ReactDOM.createRoot(
   document.getElementById("root")
@@ -15,7 +16,9 @@ ReactDOM.createRoot(
     <BrowserRouter>
       <AuthProvider>
         <SocketProvider>
-          <App />
+          <GameProvider>
+            <App />
+          </GameProvider>
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>

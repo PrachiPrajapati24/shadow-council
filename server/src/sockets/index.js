@@ -1,122 +1,116 @@
-const onlinePlayers =
-  require("../game/onlinePlayers");
+const onlinePlayers = require("../game/onlinePlayers");
 
 const {
   createRoom,
   joinRoom,
+  toggleReady,
+  startGame,
 } = require("../services/roomService");
 
 const setupSockets = (io) => {
   io.on("connection", (socket) => {
-    console.log(
-      `User Connected: ${socket.id}`
-    );
+    console.log(`User Connected: ${socket.id}`);
 
-    onlinePlayers.set(
-      socket.id,
-      {
-        socketId: socket.id,
+    onlinePlayers.set(socket.id, {
+      socketId: socket.id,
+    });
+
+    io.emit("online-count", onlinePlayers.size);
+
+    // ============================
+    // CREATE ROOM
+    // ============================
+    socket.on("create-room", () => {
+      try {
+        const room = createRoom(socket.id);
+
+        socket.join(room.roomCode);
+
+        socket.emit("room-created", room);
+
+        console.log(`Room Created: ${room.roomCode}`);
+      } catch (error) {
+        socket.emit("room-error", {
+          message: error.message,
+        });
       }
-    );
+    });
 
-    io.emit(
-      "online-count",
-      onlinePlayers.size
-    );
+    // ============================
+    // JOIN ROOM
+    // ============================
+    socket.on("join-room", (roomCode) => {
+      try {
+        const room = joinRoom(roomCode, socket.id);
 
-    // Create Room Event
-    socket.on(
-      "create-room",
-      () => {
-        try {
-          const room =
-            createRoom(
-              socket.id
-            );
+        socket.join(roomCode);
 
-          // Join Socket.io room
-          socket.join(
-            room.roomCode
-          );
+        io.to(roomCode).emit("room-updated", room);
 
-          socket.emit(
-            "room-created",
-            room
-          );
-
-          console.log(
-            `Room Created: ${room.roomCode}`
-          );
-        } catch (error) {
-          socket.emit(
-            "room-error",
-            {
-              message:
-                error.message,
-            }
-          );
-        }
+        console.log(`${socket.id} joined ${roomCode}`);
+      } catch (error) {
+        socket.emit("room-error", {
+          message: error.message,
+        });
       }
-    );
+    });
 
-    // Join Room Event
-    socket.on(
-      "join-room",
-      (roomCode) => {
-        try {
-          const room =
-            joinRoom(
-              roomCode,
-              socket.id
-            );
+    // ============================
+    // TOGGLE READY
+    // ============================
+    socket.on("toggle-ready", (roomCode) => {
+      try {
+        const room = toggleReady(roomCode, socket.id);
 
-          // Join Socket.io room
-          socket.join(
-            roomCode
-          );
+        io.to(roomCode).emit("room-updated", room);
 
-          // Notify everyone in room
-          io.to(
-            roomCode
-          ).emit(
-            "room-updated",
-            room
-          );
-
-          console.log(
-            `${socket.id} joined ${roomCode}`
-          );
-        } catch (error) {
-          socket.emit(
-            "room-error",
-            {
-              message:
-                error.message,
-            }
-          );
-        }
+        console.log(`${socket.id} toggled ready in ${roomCode}`);
+      } catch (error) {
+        socket.emit("room-error", {
+          message: error.message,
+        });
       }
-    );
+    });
 
-    socket.on(
-      "disconnect",
-      () => {
-        console.log(
-          `User Disconnected: ${socket.id}`
-        );
+    // ============================
+    // START GAME (NEW)
+    // ============================
+    socket.on("start-game", (roomCode) => {
+      try {
+        const room = startGame(roomCode, socket.id);
 
-        onlinePlayers.delete(
-          socket.id
-        );
+        // Send private role to each player
+        room.players.forEach((player) => {
+          io.to(player.socketId).emit("role-assigned", {
+            role: player.role,
+          });
+        });
 
-        io.emit(
-          "online-count",
-          onlinePlayers.size
-        );
+        // Notify everyone game started
+        io.to(roomCode).emit("game-started", {
+          roomCode: room.roomCode,
+          gameStatus: room.gameStatus,
+        });
+
+        console.log(`Game Started: ${roomCode}`);
+      } catch (error) {
+        socket.emit("room-error", {
+          message: error.message,
+        });
       }
-    );
+    });
+
+    // ============================
+    // DISCONNECT
+    // ============================
+    socket.on("disconnect", () => {
+      console.log(`User Disconnected: ${socket.id}`);
+
+      onlinePlayers.delete(socket.id);
+
+      io.emit("online-count", onlinePlayers.size);
+    });
   });
 };
 
-module.exports =
-  setupSockets;
+module.exports = setupSockets;

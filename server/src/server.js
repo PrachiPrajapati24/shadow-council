@@ -8,12 +8,13 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const setupSockets = require("./sockets");
+
+// ✅ ROOM SERVICE IMPORTS (UPDATED)
 const {
   createRoom,
   joinRoom,
-} = require(
-  "./services/roomService"
-);
+  startGame,
+} = require("./services/roomService");
 
 dotenv.config();
 connectDB();
@@ -28,49 +29,42 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
+// Health check
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Shadow Council API Running",
   });
 });
-app.get(
-  "/test-join",
-  (req, res) => {
-    try {
-      const room =
-        createRoom(
-          "host-socket"
-        );
 
-      const updatedRoom =
-        joinRoom(
-          room.roomCode,
-          "guest-socket"
-        );
+// ============================
+// TEST JOIN ROOM ROUTE
+// ============================
+app.get("/test-join", (req, res) => {
+  try {
+    const room = createRoom("host-socket");
 
-      res.json(
-        updatedRoom
-      );
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message:
-          error.message,
-      });
-    }
+    const updatedRoom = joinRoom(
+      room.roomCode,
+      "guest-socket"
+    );
+
+    res.json(updatedRoom);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
-);
+});
 
 // Create HTTP server
-const server =
-  http.createServer(app);
+const server = http.createServer(app);
 
 // Create Socket.IO server
 const io = new Server(server, {
   cors: {
-    origin:
-      "http://localhost:5173",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -78,12 +72,9 @@ const io = new Server(server, {
 // Initialize sockets
 setupSockets(io);
 
-const PORT =
-  process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 // Start server
 server.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  console.log(`Server running on port ${PORT}`);
 });

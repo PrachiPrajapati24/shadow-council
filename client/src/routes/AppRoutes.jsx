@@ -25,12 +25,10 @@ function AppRoutes() {
 
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        <Route path="/register" element={<Register />} />
       </Route>
 
+      {/* GAME FLOW ROUTES */}
       <Route path="/lobby" element={<Lobby />} />
 
       <Route
@@ -43,10 +41,7 @@ function AppRoutes() {
         element={<Game />}
       />
 
-      <Route
-        path="/profile"
-        element={<Profile />}
-      />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }
