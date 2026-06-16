@@ -3,6 +3,14 @@ import PlayerCard from "./PlayerCard";
 function PlayerList({
   players = [],
 }) {
+  if (players.length === 0) {
+    return (
+      <div>
+        No Players Found
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2
@@ -18,9 +26,7 @@ function PlayerList({
       {players.map(
         (player) => (
           <PlayerCard
-            key={
-              player.socketId
-            }
+            key={player.socketId}
             player={player}
           />
         )

@@ -2,6 +2,7 @@ const activeRooms = require("../game/activeRooms");
 const generateRoomCode = require("../utils/generateRoomCode");
 
 const { assignRoles } = require("../game/roleAssignment");
+const GAME_PHASES = require("../game/phases");
 
 // ======================
 // CREATE ROOM
@@ -26,6 +27,9 @@ const createRoom = (hostSocketId) => {
     ],
 
     gameStatus: "waiting",
+
+    phase: GAME_PHASES.WAITING,
+
     createdAt: Date.now(),
   };
 
@@ -122,7 +126,7 @@ const canStartGame = (roomCode, socketId) => {
 };
 
 // ======================
-// START GAME (NEW)
+// START GAME
 // ======================
 const startGame = (roomCode, socketId) => {
   canStartGame(roomCode, socketId);
@@ -132,6 +136,21 @@ const startGame = (roomCode, socketId) => {
   room.players = assignRoles(room.players);
 
   room.gameStatus = "in-progress";
+
+  room.phase = GAME_PHASES.NIGHT;
+
+  return room;
+};
+
+// ======================
+// GET ROOM
+// ======================
+const getRoom = (roomCode) => {
+  const room = activeRooms.get(roomCode);
+
+  if (!room) {
+    throw new Error("Room not found");
+  }
 
   return room;
 };
@@ -145,4 +164,5 @@ module.exports = {
   toggleReady,
   canStartGame,
   startGame,
+  getRoom,
 };
