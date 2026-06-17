@@ -5,7 +5,9 @@ const {
   joinRoom,
   toggleReady,
   startGame,
+  startPhaseLoop,
   getRoom,
+  nextPhase,
 } = require("../services/roomService");
 
 const setupSockets = (io) => {
@@ -46,9 +48,14 @@ const setupSockets = (io) => {
 
         socket.join(roomCode);
 
-        io.to(roomCode).emit("room-updated", room);
+        io.to(roomCode).emit(
+          "room-updated",
+          room
+        );
 
-        console.log(`${socket.id} joined ${roomCode}`);
+        console.log(
+          `${socket.id} joined ${roomCode}`
+        );
       } catch (error) {
         socket.emit("room-error", {
           message: error.message,
@@ -57,13 +64,16 @@ const setupSockets = (io) => {
     });
 
     // ============================
-    // GET ROOM (NEW)
+    // GET ROOM
     // ============================
     socket.on("get-room", (roomCode) => {
       try {
         const room = getRoom(roomCode);
 
-        socket.emit("room-loaded", room);
+        socket.emit(
+          "room-loaded",
+          room
+        );
       } catch (error) {
         socket.emit("room-error", {
           message: error.message,
@@ -76,9 +86,15 @@ const setupSockets = (io) => {
     // ============================
     socket.on("toggle-ready", (roomCode) => {
       try {
-        const room = toggleReady(roomCode, socket.id);
+        const room = toggleReady(
+          roomCode,
+          socket.id
+        );
 
-        io.to(roomCode).emit("room-updated", room);
+        io.to(roomCode).emit(
+          "room-updated",
+          room
+        );
 
         console.log(
           `${socket.id} toggled ready in ${roomCode}`
@@ -95,7 +111,16 @@ const setupSockets = (io) => {
     // ============================
     socket.on("start-game", (roomCode) => {
       try {
-        const room = startGame(roomCode, socket.id);
+        const room = startGame(
+          roomCode,
+          socket.id
+        );
+
+        // START AUTO PHASE LOOP
+        startPhaseLoop(
+          room,
+          io
+        );
 
         // Send private role to each player
         room.players.forEach((player) => {
@@ -112,8 +137,15 @@ const setupSockets = (io) => {
           "game-started",
           {
             roomCode: room.roomCode,
-            gameStatus: room.gameStatus,
+            gameStatus:
+              room.gameStatus,
           }
+        );
+
+        // Sync room data
+        io.to(roomCode).emit(
+          "room-updated",
+          room
         );
 
         console.log(
@@ -127,6 +159,59 @@ const setupSockets = (io) => {
     });
 
     // ============================
+    // NEXT PHASE (DEBUG)
+    // ============================
+    socket.on(
+      "next-phase",
+      (roomCode) => {
+        console.log(
+          "NEXT PHASE RECEIVED:",
+          roomCode
+        );
+
+        console.log(
+          "SOCKET ID:",
+          socket.id
+        );
+
+        try {
+          const room =
+            nextPhase(
+              roomCode,
+              socket.id
+            );
+
+          console.log(
+            "NEW PHASE:",
+            room.phase
+          );
+
+          io.to(roomCode).emit(
+            "room-updated",
+            room
+          );
+
+          console.log(
+            `Phase Changed: ${roomCode} -> ${room.phase}`
+          );
+        } catch (error) {
+          console.log(
+            "NEXT PHASE ERROR:",
+            error.message
+          );
+
+          socket.emit(
+            "room-error",
+            {
+              message:
+                error.message,
+            }
+          );
+        }
+      }
+    );
+
+    // ============================
     // DISCONNECT
     // ============================
     socket.on("disconnect", () => {
@@ -134,7 +219,9 @@ const setupSockets = (io) => {
         `User Disconnected: ${socket.id}`
       );
 
-      onlinePlayers.delete(socket.id);
+      onlinePlayers.delete(
+        socket.id
+      );
 
       io.emit(
         "online-count",

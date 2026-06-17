@@ -1,4 +1,17 @@
+import {
+  useContext,
+} from "react";
+
+import {
+  GameContext,
+} from "../../context/GameContext";
+
 function StatusBanner() {
+  const { room } =
+    useContext(
+      GameContext
+    );
+
   return (
     <div
       className="
@@ -8,7 +21,10 @@ function StatusBanner() {
       font-semibold
       "
     >
-      Waiting For Players
+      Current Phase:
+      {" "}
+      {room?.phase ||
+        "Loading"}
     </div>
   );
 }

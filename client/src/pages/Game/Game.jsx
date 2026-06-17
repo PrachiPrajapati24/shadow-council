@@ -46,7 +46,22 @@ function Game() {
 
     const handleRoomLoaded =
       (roomData) => {
+        console.log(
+          "ROOM LOADED",
+          roomData.phase
+        );
+
         setRoom(roomData);
+      };
+
+    const handleRoomUpdated =
+      (updatedRoom) => {
+        console.log(
+          "ROOM UPDATED:",
+          updatedRoom.phase
+        );
+
+        setRoom(updatedRoom);
       };
 
     socket.on(
@@ -54,10 +69,20 @@ function Game() {
       handleRoomLoaded
     );
 
+    socket.on(
+      "room-updated",
+      handleRoomUpdated
+    );
+
     return () => {
       socket.off(
         "room-loaded",
         handleRoomLoaded
+      );
+
+      socket.off(
+        "room-updated",
+        handleRoomUpdated
       );
     };
   }, [

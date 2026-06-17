@@ -4,6 +4,16 @@ const generateRoomCode = require("../utils/generateRoomCode");
 const { assignRoles } = require("../game/roleAssignment");
 const GAME_PHASES = require("../game/phases");
 
+const {
+  setRoomTimer,
+  clearRoomTimer,
+} = require("../game/phaseManager");
+
+const {
+  advancePhase,
+  getPhaseDuration,
+} = require("../game/gameEngine");
+
 // ======================
 // CREATE ROOM
 // ======================
@@ -29,6 +39,8 @@ const createRoom = (hostSocketId) => {
     gameStatus: "waiting",
 
     phase: GAME_PHASES.WAITING,
+
+    phaseEndsAt: null,
 
     createdAt: Date.now(),
   };
@@ -139,6 +151,82 @@ const startGame = (roomCode, socketId) => {
 
   room.phase = GAME_PHASES.NIGHT;
 
+  room.phaseEndsAt =
+    Date.now() + 15000;
+
+  return room;
+};
+
+// ======================
+// AUTO PHASE LOOP
+// ======================
+const startPhaseLoop = (
+  room,
+  io
+) => {
+  clearRoomTimer(
+    room.roomCode
+  );
+
+  const duration =
+    getPhaseDuration(
+      room.phase
+    );
+
+  room.phaseEndsAt =
+    Date.now() +
+    duration * 1000;
+
+  const timer =
+    setTimeout(() => {
+      advancePhase(room);
+
+      io.to(
+        room.roomCode
+      ).emit(
+        "room-updated",
+        room
+      );
+
+      startPhaseLoop(
+        room,
+        io
+      );
+    }, duration * 1000);
+
+  setRoomTimer(
+    room.roomCode,
+    timer
+  );
+};
+
+// ======================
+// NEXT PHASE
+// ======================
+const nextPhase = (
+  roomCode,
+  socketId
+) => {
+  const room =
+    activeRooms.get(roomCode);
+
+  if (!room) {
+    throw new Error(
+      "Room not found"
+    );
+  }
+
+  if (
+    room.hostId !==
+    socketId
+  ) {
+    throw new Error(
+      "Only host can change phases"
+    );
+  }
+
+  advancePhase(room);
+
   return room;
 };
 
@@ -164,5 +252,7 @@ module.exports = {
   toggleReady,
   canStartGame,
   startGame,
+  startPhaseLoop,
   getRoom,
+  nextPhase,
 };

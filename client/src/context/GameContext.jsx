@@ -15,6 +15,12 @@ function GameProvider({
   const [role, setRole] =
     useState(null);
 
+  // NEW
+  const [
+    timeRemaining,
+    setTimeRemaining,
+  ] = useState(0);
+
   return (
     <GameContext.Provider
       value={{
@@ -23,6 +29,9 @@ function GameProvider({
 
         role,
         setRole,
+
+        timeRemaining,
+        setTimeRemaining,
       }}
     >
       {children}
